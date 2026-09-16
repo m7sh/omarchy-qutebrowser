@@ -1,0 +1,36 @@
+#!/bin/bash
+# ==============================================================================
+# Omarchy Hook: Qutebrowser Dynamic Theme Sync
+# Automatically triggered whenever an Omarchy theme is changed
+# ==============================================================================
+set -euo pipefail
+
+theme_dir=${OMARCHY_THEME_DIR:-$HOME/.local/state/omarchy/current/theme}
+target_dir=${XDG_CONFIG_HOME:-$HOME/.config}/qutebrowser
+
+mkdir -p -- "$target_dir"
+
+# Sync python theme configuration
+source_theme=$theme_dir/qutebrowser-theme.py
+if [[ -f $source_theme && ! -L $source_theme ]]; then
+    temp_theme=$(mktemp "$target_dir/.theme.XXXXXX")
+    trap 'rm -f -- "${temp_theme:-}" "${temp_start:-}"' EXIT
+    cp -- "$source_theme" "$temp_theme"
+    chmod 644 "$temp_theme"
+    mv -f -- "$temp_theme" "$target_dir/theme.py"
+fi
+
+# Sync dynamic startpage
+source_startpage=$theme_dir/qutebrowser-startpage.html
+if [[ -f $source_startpage && ! -L $source_startpage ]]; then
+    temp_start=$(mktemp "$target_dir/.start.XXXXXX")
+    trap 'rm -f -- "${temp_theme:-}" "${temp_start:-}"' EXIT
+    cp -- "$source_startpage" "$temp_start"
+    chmod 644 "$temp_start"
+    mv -f -- "$temp_start" "$target_dir/startpage.html"
+fi
+
+# If qutebrowser is running, reload configuration live without interrupting sessions
+if pgrep -x qutebrowser >/dev/null 2>&1; then
+    qutebrowser :config-source >/dev/null 2>&1 || true
+fi
