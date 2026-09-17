@@ -22,6 +22,7 @@
 - ⚡ **Local Terminal Startpage**: A millisecond-fast local new tab dashboard with live system clock, formatted date, DuckDuckGo search bar, bookmark tiles, and a Vim cheat sheet.
 - ⌨️ **Vim Keyboard Controls**: Seamless single-key navigation, quick hints, history management, and tab cycling.
 - 🎬 **1-Key MPV Video Player**: Press <kbd>M</kbd> on any YouTube or video link (or <kbd>,</kbd><kbd>m</kbd> on any page) to stream directly in hardware-accelerated `mpv`.
+- 🛡️ **Built-in YouTube Ad Skipping (Greasemonkey)**: Bundles the lightweight YouTube ad-skipping userscript (`yt-ads.js`) in `~/.config/qutebrowser/greasemonkey/` to fast-forward and auto-skip YouTube ads seamlessly.
 - 🌙 **Non-Inverting Dark Mode**: Uses CIELAB lightness curve with smart image protection (`policy.images = "never"`). Toggle on/off anytime with <kbd>t</kbd><kbd>d</kbd>.
 
 ---
@@ -45,10 +46,11 @@ cd omarchy-qutebrowser
 ### What the installer does:
 1. Installs `qutebrowser` (via `omarchy pkg add` or `pacman` if not already installed).
 2. Deploys `config.py` to `~/.config/qutebrowser/config.py` (backs up existing config).
-3. Installs dynamic templates to `~/.config/omarchy/themed/`.
-4. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
-5. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
-6. Generates the active palette for your current Omarchy theme immediately.
+3. Installs Greasemonkey userscripts (`yt-ads.js`) to `~/.config/qutebrowser/greasemonkey/`.
+4. Installs dynamic templates to `~/.config/omarchy/themed/`.
+5. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
+6. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
+7. Generates the active palette for your current Omarchy theme immediately.
 
 ---
 
@@ -56,10 +58,11 @@ cd omarchy-qutebrowser
 
 If you prefer to configure manually:
 
-### 1. Copy Qutebrowser Config
+### 1. Copy Qutebrowser Config & Greasemonkey Scripts
 ```bash
-mkdir -p ~/.config/qutebrowser
+mkdir -p ~/.config/qutebrowser/greasemonkey
 cp config.py ~/.config/qutebrowser/config.py
+cp greasemonkey/* ~/.config/qutebrowser/greasemonkey/
 ```
 
 ### 2. Copy Omarchy Theming Templates & Hook
@@ -110,7 +113,7 @@ omarchy theme set "$(omarchy theme current)"
 | <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle smart dark mode |
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
-| <kbd>t</kbd><kbd>r</kbd> | `:config-source` | Reload config and active Omarchy theme |
+| <kbd>t</kbd><kbd>r</kbd> | `:config-source ;; :greasemonkey-reload` | Reload config, active Omarchy theme, and Greasemonkey scripts |
 | <kbd>Esc</kbd> | `cancel` | Clear search selection and return to normal mode |
 
 ---

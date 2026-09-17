@@ -77,6 +77,11 @@ c.url.searchengines = {
     "om": "https://omarchy.org/?q={}",
 }
 
+# Allow local startpage to access remote URLs, submit search forms & open bookmarks
+c.content.local_content_can_access_remote_urls = True
+c.content.local_content_can_access_file_urls = True
+config.set("content.local_content_can_access_remote_urls", True, "file://*")
+
 # ------------------------------------------------------------------------------
 # Smooth Scrolling & Dark Mode Engine
 # ------------------------------------------------------------------------------
@@ -86,6 +91,7 @@ c.colors.webpage.darkmode.policy.images = "never"
 c.colors.webpage.darkmode.enabled = True
 
 # Content & Downloads
+c.content.blocking.enabled = True
 c.content.blocking.method = "auto"
 c.content.notifications.enabled = True
 c.downloads.location.prompt = False
@@ -101,8 +107,8 @@ config.bind("td", "config-cycle colors.webpage.darkmode.enabled")
 config.bind("tt", "config-cycle tabs.show always switching")
 config.bind("ts", "config-cycle statusbar.show always in-mode")
 
-# Reload config & Omarchy theme
-config.bind("tr", "config-source")
+# Reload config, Omarchy theme & Greasemonkey scripts
+config.bind("tr", "config-source ;; greasemonkey-reload")
 
 # Stream video in MPV (Direct Wayland player integration)
 config.bind("M", "hint links spawn mpv {hint-url}")

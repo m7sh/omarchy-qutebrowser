@@ -61,7 +61,16 @@ cp "$SCRIPT_DIR/config.py" "$QUTE_DIR/config.py"
 chmod 644 "$QUTE_DIR/config.py"
 echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
-# 3. Install Omarchy theme templates
+# 3. Install Greasemonkey userscripts (YouTube ad skipping, etc.)
+mkdir -p "$QUTE_DIR/greasemonkey"
+if [[ -d "$SCRIPT_DIR/greasemonkey" ]]; then
+    echo -e "${BLUE}➜ Installing Greasemonkey scripts...${RESET}"
+    cp -r "$SCRIPT_DIR/greasemonkey/"* "$QUTE_DIR/greasemonkey/"
+    chmod 644 "$QUTE_DIR/greasemonkey"/*
+    echo -e "${GREEN}✓ Greasemonkey scripts installed to $QUTE_DIR/greasemonkey/${RESET}"
+fi
+
+# 4. Install Omarchy theme templates
 if [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy" ]]; then
     mkdir -p "$OMARCHY_THEMED"
     echo -e "${BLUE}➜ Installing Omarchy theme templates...${RESET}"
@@ -69,14 +78,14 @@ if [[ -d "${XDG_CONFIG_HOME:-$HOME/.config}/omarchy" ]]; then
     cp "$SCRIPT_DIR/contrib/omarchy/qutebrowser-startpage.html.tpl" "$OMARCHY_THEMED/"
     echo -e "${GREEN}✓ Templates installed to $OMARCHY_THEMED/${RESET}"
 
-    # 4. Install theme synchronization hook
+    # 5. Install theme synchronization hook
     mkdir -p "$OMARCHY_HOOKS"
     echo -e "${BLUE}➜ Installing Omarchy theme-set hook...${RESET}"
     cp "$SCRIPT_DIR/contrib/omarchy/qutebrowser-theme" "$OMARCHY_HOOKS/"
     chmod +x "$OMARCHY_HOOKS/qutebrowser-theme"
     echo -e "${GREEN}✓ Hook installed to $OMARCHY_HOOKS/qutebrowser-theme${RESET}"
 
-    # 5. Trigger theme sync for active theme
+    # 6. Trigger theme sync for active theme
     if command -v omarchy >/dev/null 2>&1; then
         CURRENT_THEME="$(omarchy theme current 2>/dev/null || echo '')"
         if [[ -n "$CURRENT_THEME" ]]; then
@@ -89,7 +98,7 @@ else
     echo -e "${YELLOW}Note: ~/.config/omarchy not detected. Standalone fallback colors will be used.${RESET}"
 fi
 
-# 6. Configure Hyprland Window Rule (Terminal 0.90 Opacity)
+# 7. Configure Hyprland Window Rule (Terminal 0.90 Opacity)
 if [[ -f "$HYPR_CONF" ]]; then
     if ! grep -q "qutebrowser" "$HYPR_CONF"; then
         echo -e "${BLUE}➜ Adding 0.90 window opacity rule to $HYPR_CONF...${RESET}"
