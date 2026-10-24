@@ -23,7 +23,7 @@ cat << 'EOF'
  \___/|_| |_| |_|\__,_|_|  \___|_| |_|\__, | \__\_\\__,_|\__\___|_.__/|_|  \___/ \_/\_/ |___/\___|_|   
                                        |___/                                                              
 EOF
-echo -e "${RESET}${CYAN}Dynamic Theming & Wayland Transparency for Omarchy Linux${RESET}\n"
+echo -e "${RESET}${CYAN}Dynamic Theming & Brave-Grade Ad Blocking for Omarchy Linux${RESET}\n"
 
 # Directory paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -81,13 +81,17 @@ cp "$SCRIPT_DIR/brave-lists.txt" "$QUTE_DIR/brave-lists.txt"
 chmod 644 "$QUTE_DIR/brave_adblock.py" "$QUTE_DIR/brave_cosmetics.py" "$QUTE_DIR/brave-lists.txt"
 echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
-# Clean up obsolete Greasemonkey scripts if previously installed
-if [[ -f "$QUTE_DIR/greasemonkey/yt-ads.js" ]]; then
-    rm -f "$QUTE_DIR/greasemonkey/yt-ads.js"
-    rmdir "$QUTE_DIR/greasemonkey" 2>/dev/null || true
+# 3. Install YouTube AdBlock userscript (document-start player response interceptor)
+mkdir -p "$QUTE_DIR/greasemonkey"
+rm -f "$QUTE_DIR/greasemonkey/yt-ads.js"
+if [[ -d "$SCRIPT_DIR/greasemonkey" ]]; then
+    echo -e "${BLUE}➜ Installing YouTube AdBlock userscript...${RESET}"
+    cp -r "$SCRIPT_DIR/greasemonkey/"* "$QUTE_DIR/greasemonkey/"
+    chmod 644 "$QUTE_DIR/greasemonkey"/*
+    echo -e "${GREEN}✓ Userscript installed to $QUTE_DIR/greasemonkey/${RESET}"
 fi
 
-# 3. Pre-build the adblock engine cache so blocking works on first launch
+# 3b. Pre-build the adblock engine cache so blocking works on first launch
 if python3 -c 'import adblock' >/dev/null 2>&1; then
     echo -e "${BLUE}➜ Building Brave adblock cache (downloads ~9 MB of filter lists)...${RESET}"
     if python3 "$SCRIPT_DIR/contrib/brave_adblock/build_cache.py" \
@@ -128,25 +132,14 @@ else
     echo -e "${YELLOW}Note: ~/.config/omarchy not detected. Standalone fallback colors will be used.${RESET}"
 fi
 
-# 7. Configure Hyprland Window Rule (Terminal 0.90 Opacity)
-if [[ -f "$HYPR_CONF" ]]; then
-    if ! grep -q "qutebrowser" "$HYPR_CONF"; then
-        echo -e "${BLUE}➜ Adding 0.90 window opacity rule to $HYPR_CONF...${RESET}"
-        cat << 'EOF' >> "$HYPR_CONF"
-
--- Qutebrowser window rules: match terminal 0.90 transparency
-o.window("([oO]rg\\.[qQ]utebrowser\\.[qQ]utebrowser|[qQ]utebrowser)", {
-  tag = "-default-opacity",
-  opacity = "0.90 0.85",
-})
-EOF
-        if command -v hyprctl >/dev/null 2>&1; then
-            hyprctl reload >/dev/null 2>&1 || true
-        fi
-        echo -e "${GREEN}✓ Hyprland window rule added and reloaded.${RESET}"
-    else
-        echo -e "${GREEN}✓ Hyprland already contains qutebrowser window rules.${RESET}"
+# 7. Clean up any obsolete Hyprland window opacity rules
+if [[ -f "$HYPR_CONF" ]] && grep -q "qutebrowser" "$HYPR_CONF"; then
+    echo -e "${BLUE}➜ Removing obsolete Qutebrowser transparency rules from $HYPR_CONF...${RESET}"
+    sed -i '/-- Qutebrowser window rules/,+4d' "$HYPR_CONF" 2>/dev/null || true
+    if command -v hyprctl >/dev/null 2>&1; then
+        hyprctl reload >/dev/null 2>&1 || true
     fi
+    echo -e "${GREEN}✓ Hyprland transparency rule removed.${RESET}"
 fi
 
 # 8. Install desktop entry & launcher icon

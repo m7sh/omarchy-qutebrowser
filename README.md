@@ -1,6 +1,6 @@
 # 🌐 Omarchy Qutebrowser
 
-> **Aesthetic, keyboard-driven Qutebrowser setup with dynamic Omarchy theme synchronization, terminal-matching 0.90 Wayland transparency, and a built-in terminal startpage.**
+> **Aesthetic, keyboard-driven Qutebrowser setup with dynamic Omarchy theme synchronization, solid opaque Wayland rendering, and a built-in terminal startpage.**
 
 <p align="center">
   <img src="./preview.png" alt="Omarchy Qutebrowser Preview" width="100%">
@@ -19,10 +19,9 @@
 ## ✨ Features
 
 - 🎨 **Dynamic Omarchy Theme Sync**: Hooks directly into `omarchy theme set <theme>`. Whether you switch to *Velvet Dusk*, *Gruvbox*, *Catppuccin*, or *Everpuccin*, Qutebrowser immediately synchronizes all tab, statusbar, and UI colors via IPC without closing your tabs.
-- 🪟 **Crystal-Clear Terminal Transparency**: Matches your `foot` / `ghostty` terminal's exact `0.90` background opacity. No frosted blur distortion — your desktop wallpaper shines through cleanly and sharply.
 - ⚡ **Local Terminal Startpage**: A millisecond-fast local new tab dashboard with live system clock, formatted date, DuckDuckGo search bar, bookmark tiles, and a Vim cheat sheet.
 - ⌨️ **Vim Keyboard Controls**: Seamless single-key navigation, quick hints, history management, and tab cycling.
-- 🛡️ **Brave-Grade Ad Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, and a cosmetic-filtering layer (element hiding) that blocks ads, tracker networks, and popups natively.
+- 🛡️ **Brave-Grade Ad & YouTube Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, DOM cosmetic element hiding, and dedicated YouTube video ad skipping & banner suppression.
 - 🎬 **1-Key MPV Video Player**: Press <kbd>M</kbd> on any YouTube or video link (or <kbd>,</kbd><kbd>m</kbd> on any page) to stream directly in hardware-accelerated `mpv`.
 - 🌙 **Non-Inverting Dark Mode**: Uses CIELAB lightness curve with smart image protection (`policy.images = "never"`). Toggle on/off anytime with <kbd>t</kbd><kbd>d</kbd>.
 
@@ -45,13 +44,13 @@ cd omarchy-qutebrowser
 ```
 
 ### What the installer does:
-1. Installs `qutebrowser` + `python-adblock` (Brave's engine) via `omarchy pkg add` or `pacman`.
-2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py` and `brave-lists.txt` to `~/.config/qutebrowser/` (backs up existing `config.py`).
+1. Installs `qutebrowser` + `python-adblock` (Brave's engine) via `omarchy pkg add` or `pacman` (with `uv` user fallback).
+2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py`, `brave-lists.txt` and `greasemonkey/` to `~/.config/qutebrowser/` (backs up existing `config.py`).
 3. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
 4. Installs dynamic templates to `~/.config/omarchy/themed/`.
 5. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
-6. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
-7. Generates the active palette for your current Omarchy theme immediately.
+6. Generates the active palette for your current Omarchy theme immediately.
+7. Registers the desktop launcher entry and icon.
 
 ---
 
@@ -59,10 +58,11 @@ cd omarchy-qutebrowser
 
 If you prefer to configure manually:
 
-### 1. Copy Qutebrowser Config & Brave Adblock Files
+### 1. Copy Qutebrowser Config, Brave Adblock Files & Userscripts
 ```bash
-mkdir -p ~/.config/qutebrowser
+mkdir -p ~/.config/qutebrowser/greasemonkey
 cp config.py brave_adblock.py brave_cosmetics.py brave-lists.txt ~/.config/qutebrowser/
+cp greasemonkey/* ~/.config/qutebrowser/greasemonkey/
 ```
 
 Build the adblock cache (requires `python-adblock`):
@@ -79,23 +79,7 @@ cp contrib/omarchy/qutebrowser-theme ~/.config/omarchy/hooks/theme-set.d/
 chmod +x ~/.config/omarchy/hooks/theme-set.d/qutebrowser-theme
 ```
 
-### 3. Add Hyprland Window Rule
-Add this to `~/.config/hypr/hyprland.lua`:
-
-```lua
--- Qutebrowser window rules: match terminal 0.90 transparency
-o.window("([oO]rg\\.[qQ]utebrowser\\.[qQ]utebrowser|[qQ]utebrowser)", {
-  tag = "-default-opacity",
-  opacity = "0.90 0.85",
-})
-```
-
-Reload Hyprland:
-```bash
-hyprctl reload
-```
-
-### 4. Apply Your Current Theme
+### 3. Apply Your Current Theme
 ```bash
 omarchy theme set "$(omarchy theme current)"
 ```
@@ -133,6 +117,12 @@ On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**
 
 For everything else, all network blocking, element hiding, and tracking prevention use the exact same engine and lists Brave ships.
 
+### 🎬 Dedicated YouTube Ad & Banner Elimination
+Because YouTube streams video ads dynamically over media chunk connections (`googlevideo.com`) and updates its player DOM frequently:
+- **Player Response Interception**: Strips `adPlacements` and `adSlots` from `ytInitialPlayerResponse` before the player can initialize ad queues.
+- **Fast-Forward & Auto-Skip Engine**: Intercepts in-stream ad overlays, mutes audio, accelerates playback to 16×, and seeks to completion.
+- **Cosmetic Banner Hiding**: Injects custom CSS rules hiding sidebar banners (`ytd-ad-slot-renderer`), top mastheads, and sponsored tiles.
+
 ---
 
 ## ⌨️ Keybindings Reference
@@ -151,7 +141,7 @@ For everything else, all network blocking, element hiding, and tracking preventi
 | <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle smart dark mode |
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
-| <kbd>t</kbd><kbd>r</kbd> | `:config-source` | Reload config and active Omarchy theme |
+| <kbd>t</kbd><kbd>r</kbd> | `:config-source ;; :greasemonkey-reload` | Reload config, active Omarchy theme & userscripts |
 | <kbd>t</kbd><kbd>a</kbd> | `:adblock-update` | Redownload Brave filter lists and rebuild the adblock engine |
 | <kbd>Esc</kbd> | `cancel` | Clear search selection and return to normal mode |
 

@@ -28,6 +28,86 @@ _TIMER = None
 _KNOWN_BROWSERS = weakref.WeakSet()
 _ATTACHED_TABS = weakref.WeakSet()
 
+# YouTube-specific ad blocking: hides ad slots, banners, mastheads, sponsor boxes
+# and skips in-stream video ads that googlevideo media streams deliver.
+_YOUTUBE_CSS = """
+ytd-ad-slot-renderer,
+#masthead-ad,
+.ytp-ad-module,
+.ytp-ad-overlay-container,
+.ytp-ad-overlay-slot,
+.ytp-ad-image-overlay,
+.ytp-ad-text-overlay,
+#player-ads,
+ytd-banner-promo-renderer,
+ytd-in-feed-ad-layout-renderer,
+ytd-action-companion-ad-renderer,
+#clarify-box,
+ytd-statement-banner-renderer,
+ytd-compact-promoted-video-renderer,
+ytd-promoted-sparkles-web-renderer,
+ytd-promoted-sparkles-text-search-renderer,
+.ytd-search-pyv-renderer,
+ytd-search-pyv-renderer,
+ytd-video-ad-renderer,
+.ytp-ad-progress-list,
+.ytp-ad-message-container,
+#related ytd-ad-slot-renderer,
+#secondary ytd-ad-slot-renderer,
+ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-ads"],
+tp-yt-paper-dialog:has(#feedback.ytd-enforcement-message-view-model) {
+  display: none !important;
+}
+"""
+
+_YOUTUBE_JS = r"""
+(function () {
+  if (window.__brave_yt_adblock_active) return;
+  window.__brave_yt_adblock_active = true;
+
+  const SKIP_SELECTORS = [
+    '.ytp-skip-ad-button',
+    '.ytp-ad-skip-button',
+    '.ytp-ad-skip-button-modern',
+    '.videoAdUiSkipButton',
+    'button.ytp-ad-skip-button-modern',
+    '.ytp-ad-skip-button-slot button',
+    '[id^="skip-button:"]',
+  ].join(',');
+
+  function skipVideoAd() {
+    const skipBtn = document.querySelector(SKIP_SELECTORS);
+    if (skipBtn) {
+      try { skipBtn.click(); } catch (e) {}
+    }
+
+    const player = document.querySelector('.html5-video-player');
+    const adShowing = (player && (player.classList.contains('ad-showing') || player.classList.contains('ad-interrupting'))) ||
+                      document.querySelector('.ad-showing') ||
+                      document.querySelector('.ad-interrupting');
+    if (!adShowing) return;
+
+    const video = document.querySelector('video.html5-main-video') || document.querySelector('video');
+    if (!video) return;
+
+    if (player && player.classList.contains('ytp-live')) return;
+    if (document.querySelector('.ytp-live-badge')) return;
+    if (!isFinite(video.duration) || video.duration <= 0) return;
+
+    try {
+      video.muted = true;
+      video.playbackRate = 16.0;
+      video.currentTime = video.duration;
+    } catch (e) {}
+  }
+
+  const observer = new MutationObserver(skipVideoAd);
+  observer.observe(document.documentElement, { childList: true, subtree: true });
+  setInterval(skipVideoAd, 300);
+  skipVideoAd();
+})();
+"""
+
 # Collect the class/id tokens that generic cosmetic rules can match against.
 # Capped so pathological pages cannot stall the renderer or the IPC channel.
 _TOKEN_JS = r"""
@@ -181,6 +261,15 @@ def _apply(tab):
         except Exception:
             log.misc.debug("brave-cosmetics: token scan failed for %s",
                            page_url, exc_info=True)
+
+    # Dedicated YouTube ad-blocking protection
+    host = url.host().lower()
+    if host == "youtube.com" or host.endswith(".youtube.com"):
+        _inject(tab, _YOUTUBE_CSS, append=True)
+        try:
+            tab.run_js_async(_YOUTUBE_JS)
+        except Exception:
+            log.misc.debug("brave-cosmetics: youtube adblock injection failed", exc_info=True)
 
 
 def _attach(tab):
