@@ -8,6 +8,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/qutebrowser-v3.7+-8b5cf6?style=flat-square&logo=qutebrowser&logoColor=white" alt="qutebrowser">
+  <img src="https://img.shields.io/badge/adblock-Brave%20adblock--rust-ff385c?style=flat-square&logo=brave&logoColor=white" alt="Brave Adblock">
   <img src="https://img.shields.io/badge/Hyprland-Wayland-10b981?style=flat-square&logo=wayland&logoColor=white" alt="Hyprland">
   <img src="https://img.shields.io/badge/Omarchy-Linux-38bdf8?style=flat-square&logo=arch-linux&logoColor=white" alt="Omarchy">
   <img src="https://img.shields.io/badge/License-MIT-f59e0b?style=flat-square" alt="MIT License">
@@ -130,7 +131,7 @@ On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**
 - `$removeparam` URL rewriting is not performed.
 - Cosmetic filtering covers CSS selectors; procedural filters (`:has-text`, `:xpath`) are ignored.
 
-For those, the bundled YouTube ad-skip userscript covers the most visible gap. Everything else is the same engine + same lists Brave uses.
+For everything else, all network blocking, element hiding, and tracking prevention use the exact same engine and lists Brave ships.
 
 ---
 
