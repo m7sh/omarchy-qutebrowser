@@ -81,16 +81,13 @@ cp "$SCRIPT_DIR/brave-lists.txt" "$QUTE_DIR/brave-lists.txt"
 chmod 644 "$QUTE_DIR/brave_adblock.py" "$QUTE_DIR/brave_cosmetics.py" "$QUTE_DIR/brave-lists.txt"
 echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
-# 3. Install Greasemonkey userscripts (YouTube ad skipping, etc.)
-mkdir -p "$QUTE_DIR/greasemonkey"
-if [[ -d "$SCRIPT_DIR/greasemonkey" ]]; then
-    echo -e "${BLUE}➜ Installing Greasemonkey scripts...${RESET}"
-    cp -r "$SCRIPT_DIR/greasemonkey/"* "$QUTE_DIR/greasemonkey/"
-    chmod 644 "$QUTE_DIR/greasemonkey"/*
-    echo -e "${GREEN}✓ Greasemonkey scripts installed to $QUTE_DIR/greasemonkey/${RESET}"
+# Clean up obsolete Greasemonkey scripts if previously installed
+if [[ -f "$QUTE_DIR/greasemonkey/yt-ads.js" ]]; then
+    rm -f "$QUTE_DIR/greasemonkey/yt-ads.js"
+    rmdir "$QUTE_DIR/greasemonkey" 2>/dev/null || true
 fi
 
-# 3b. Pre-build the adblock engine cache so blocking works on first launch
+# 3. Pre-build the adblock engine cache so blocking works on first launch
 if python3 -c 'import adblock' >/dev/null 2>&1; then
     echo -e "${BLUE}➜ Building Brave adblock cache (downloads ~9 MB of filter lists)...${RESET}"
     if python3 "$SCRIPT_DIR/contrib/brave_adblock/build_cache.py" \

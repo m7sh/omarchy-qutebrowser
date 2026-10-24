@@ -21,9 +21,8 @@
 - 🪟 **Crystal-Clear Terminal Transparency**: Matches your `foot` / `ghostty` terminal's exact `0.90` background opacity. No frosted blur distortion — your desktop wallpaper shines through cleanly and sharply.
 - ⚡ **Local Terminal Startpage**: A millisecond-fast local new tab dashboard with live system clock, formatted date, DuckDuckGo search bar, bookmark tiles, and a Vim cheat sheet.
 - ⌨️ **Vim Keyboard Controls**: Seamless single-key navigation, quick hints, history management, and tab cycling.
-- 🛡️ **Brave-Grade Ad Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, and a cosmetic-filtering layer (element hiding) that qutebrowser does not provide on its own.
+- 🛡️ **Brave-Grade Ad Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, and a cosmetic-filtering layer (element hiding) that blocks ads, tracker networks, and popups natively.
 - 🎬 **1-Key MPV Video Player**: Press <kbd>M</kbd> on any YouTube or video link (or <kbd>,</kbd><kbd>m</kbd> on any page) to stream directly in hardware-accelerated `mpv`.
-- 🛡️ **Built-in YouTube Ad Skipping (Greasemonkey)**: Bundles the lightweight YouTube ad-skipping userscript (`yt-ads.js`) in `~/.config/qutebrowser/greasemonkey/` to fast-forward and auto-skip YouTube ads seamlessly.
 - 🌙 **Non-Inverting Dark Mode**: Uses CIELAB lightness curve with smart image protection (`policy.images = "never"`). Toggle on/off anytime with <kbd>t</kbd><kbd>d</kbd>.
 
 ---
@@ -47,12 +46,11 @@ cd omarchy-qutebrowser
 ### What the installer does:
 1. Installs `qutebrowser` + `python-adblock` (Brave's engine) via `omarchy pkg add` or `pacman`.
 2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py` and `brave-lists.txt` to `~/.config/qutebrowser/` (backs up existing `config.py`).
-3. Installs Greasemonkey userscripts (`yt-ads.js`) to `~/.config/qutebrowser/greasemonkey/`.
-4. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
-5. Installs dynamic templates to `~/.config/omarchy/themed/`.
-6. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
-7. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
-8. Generates the active palette for your current Omarchy theme immediately.
+3. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
+4. Installs dynamic templates to `~/.config/omarchy/themed/`.
+5. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
+6. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
+7. Generates the active palette for your current Omarchy theme immediately.
 
 ---
 
@@ -60,11 +58,10 @@ cd omarchy-qutebrowser
 
 If you prefer to configure manually:
 
-### 1. Copy Qutebrowser Config, Brave Adblock Files & Greasemonkey Scripts
+### 1. Copy Qutebrowser Config & Brave Adblock Files
 ```bash
-mkdir -p ~/.config/qutebrowser/greasemonkey
+mkdir -p ~/.config/qutebrowser
 cp config.py brave_adblock.py brave_cosmetics.py brave-lists.txt ~/.config/qutebrowser/
-cp greasemonkey/* ~/.config/qutebrowser/greasemonkey/
 ```
 
 Build the adblock cache (requires `python-adblock`):
@@ -153,7 +150,7 @@ For those, the bundled YouTube ad-skip userscript covers the most visible gap. E
 | <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle smart dark mode |
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
-| <kbd>t</kbd><kbd>r</kbd> | `:config-source ;; :greasemonkey-reload` | Reload config, active Omarchy theme, and Greasemonkey scripts |
+| <kbd>t</kbd><kbd>r</kbd> | `:config-source` | Reload config and active Omarchy theme |
 | <kbd>t</kbd><kbd>a</kbd> | `:adblock-update` | Redownload Brave filter lists and rebuild the adblock engine |
 | <kbd>Esc</kbd> | `cancel` | Clear search selection and return to normal mode |
 
