@@ -152,6 +152,33 @@ EOF
     fi
 fi
 
+# 8. Install desktop entry & launcher icon
+APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
+ICONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/scalable/apps"
+mkdir -p "$APPS_DIR" "$ICONS_DIR"
+ICON_SOURCE="$(find /home/mush/.local/share/uv/tools/qutebrowser /usr/share/icons -name "qutebrowser.svg" 2>/dev/null | head -n 1 || true)"
+if [[ -n "$ICON_SOURCE" && -f "$ICON_SOURCE" ]]; then
+    cp "$ICON_SOURCE" "$ICONS_DIR/qutebrowser.svg"
+fi
+cat << 'EOF' > "$APPS_DIR/org.qutebrowser.qutebrowser.desktop"
+[Desktop Entry]
+Name=Qutebrowser
+Comment=Keyboard-driven Vim browser with Brave-grade ad blocking
+GenericName=Web Browser
+Exec=qutebrowser %u
+Terminal=false
+Type=Application
+Icon=qutebrowser
+Categories=Network;WebBrowser;
+MimeType=text/html;text/xml;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/qute;
+StartupWMClass=qutebrowser
+EOF
+chmod 644 "$APPS_DIR/org.qutebrowser.qutebrowser.desktop"
+if command -v update-desktop-database >/dev/null 2>&1; then
+    update-desktop-database "$APPS_DIR" >/dev/null 2>&1 || true
+fi
+echo -e "${GREEN}✓ Desktop launcher entry installed.${RESET}"
+
 echo -e "\n${GREEN}${BOLD}🎉 Installation Complete!${RESET}"
 echo -e "Launch with: ${CYAN}qutebrowser${RESET}"
 echo -e "Update adblock lists: ${CYAN}ta${RESET} (or ${CYAN}:adblock-update${RESET})"
