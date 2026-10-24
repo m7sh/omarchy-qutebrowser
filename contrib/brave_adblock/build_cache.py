@@ -143,6 +143,19 @@ def main():
         f"({args.output.stat().st_size / 1_000_000:.1f} MB, "
         f"{len(contents)} lists, {total_bytes / 1_000_000:.1f} MB of rules)"
     )
+
+    # Also write StevenBlack hosts for qutebrowser's hostblock component
+    hosts_output = args.output.parent / "blocked-hosts"
+    hosts_url = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts"
+    try:
+        hosts_text = fetch(hosts_url, args.download_cache, args.refresh)
+        hosts_tmp = hosts_output.with_suffix(hosts_output.suffix + ".tmp")
+        hosts_tmp.write_text(hosts_text, encoding="utf-8")
+        hosts_tmp.replace(hosts_output)
+        print(f"Wrote {hosts_output} ({hosts_output.stat().st_size / 1_000_000:.1f} MB, hosts file)")
+    except Exception as exc:
+        print(f"warning: failed to download hosts file: {exc}", file=sys.stderr)
+
     if failures:
         print(f"warning: {len(failures)} list(s) failed to download; "
               "run `:adblock-update` later to retry", file=sys.stderr)
