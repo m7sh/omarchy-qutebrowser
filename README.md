@@ -21,6 +21,7 @@
 - 🪟 **Crystal-Clear Terminal Transparency**: Matches your `foot` / `ghostty` terminal's exact `0.90` background opacity. No frosted blur distortion — your desktop wallpaper shines through cleanly and sharply.
 - ⚡ **Local Terminal Startpage**: A millisecond-fast local new tab dashboard with live system clock, formatted date, DuckDuckGo search bar, bookmark tiles, and a Vim cheat sheet.
 - ⌨️ **Vim Keyboard Controls**: Seamless single-key navigation, quick hints, history management, and tab cycling.
+- 🛡️ **Brave-Grade Ad Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, and a cosmetic-filtering layer (element hiding) that qutebrowser does not provide on its own.
 - 🎬 **1-Key MPV Video Player**: Press <kbd>M</kbd> on any YouTube or video link (or <kbd>,</kbd><kbd>m</kbd> on any page) to stream directly in hardware-accelerated `mpv`.
 - 🛡️ **Built-in YouTube Ad Skipping (Greasemonkey)**: Bundles the lightweight YouTube ad-skipping userscript (`yt-ads.js`) in `~/.config/qutebrowser/greasemonkey/` to fast-forward and auto-skip YouTube ads seamlessly.
 - 🌙 **Non-Inverting Dark Mode**: Uses CIELAB lightness curve with smart image protection (`policy.images = "never"`). Toggle on/off anytime with <kbd>t</kbd><kbd>d</kbd>.
@@ -44,13 +45,14 @@ cd omarchy-qutebrowser
 ```
 
 ### What the installer does:
-1. Installs `qutebrowser` (via `omarchy pkg add` or `pacman` if not already installed).
-2. Deploys `config.py` to `~/.config/qutebrowser/config.py` (backs up existing config).
+1. Installs `qutebrowser` + `python-adblock` (Brave's engine) via `omarchy pkg add` or `pacman`.
+2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py` and `brave-lists.txt` to `~/.config/qutebrowser/` (backs up existing `config.py`).
 3. Installs Greasemonkey userscripts (`yt-ads.js`) to `~/.config/qutebrowser/greasemonkey/`.
-4. Installs dynamic templates to `~/.config/omarchy/themed/`.
-5. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
-6. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
-7. Generates the active palette for your current Omarchy theme immediately.
+4. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
+5. Installs dynamic templates to `~/.config/omarchy/themed/`.
+6. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
+7. Adds the `0.90` window opacity rule to `~/.config/hypr/hyprland.lua`.
+8. Generates the active palette for your current Omarchy theme immediately.
 
 ---
 
@@ -58,11 +60,16 @@ cd omarchy-qutebrowser
 
 If you prefer to configure manually:
 
-### 1. Copy Qutebrowser Config & Greasemonkey Scripts
+### 1. Copy Qutebrowser Config, Brave Adblock Files & Greasemonkey Scripts
 ```bash
 mkdir -p ~/.config/qutebrowser/greasemonkey
-cp config.py ~/.config/qutebrowser/config.py
+cp config.py brave_adblock.py brave_cosmetics.py brave-lists.txt ~/.config/qutebrowser/
 cp greasemonkey/* ~/.config/qutebrowser/greasemonkey/
+```
+
+Build the adblock cache (requires `python-adblock`):
+```bash
+python3 contrib/brave_adblock/build_cache.py --refresh
 ```
 
 ### 2. Copy Omarchy Theming Templates & Hook
@@ -97,6 +104,39 @@ omarchy theme set "$(omarchy theme current)"
 
 ---
 
+## 🛡️ Brave-Grade Ad Blocking
+
+Qutebrowser's `content.blocking` backend is **Brave's own `adblock-rust` engine** (the Python `adblock` package). This setup plugs Brave's real filter catalog into it instead of qutebrowser's two-list default, so the blocking decisions come from the same rules Brave ships.
+
+The catalog in [`brave-lists.txt`](./brave-lists.txt) mirrors the default-enabled entries of Brave's [`list_catalog.json`](https://github.com/brave/adblock-resources/blob/master/filter_lists/list_catalog.json):
+
+| Layer | What it adds |
+| :--- | :--- |
+| Brave Default | uBlock Origin filters + yearly lists, EasyList, URLhaus, Brave Specific/Social/SugarCoat |
+| Brave Privacy | EasyPrivacy + uBO Privacy |
+| Brave First Party | `brave-firstparty.txt` + regional first-party rules |
+| Cookie Notices | Fanboy Cookie + uBO Cookie + Brave cookie rules |
+| Hosts layer | StevenBlack hosts (second net for trackers missing from ABP lists) |
+
+On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**: it asks the same adblock-rust engine for the page's `hide_selectors`, `style_selectors` and generic `.class`/`#id` rules, then injects them as a `<style>` element. That is the element-hiding step qutebrowser's [FAQ](https://github.com/qutebrowser/qutebrowser/issues/5754) says is not implemented. `$generichide` exceptions are honoured.
+
+**Updating lists**
+
+- Press <kbd>t</kbd><kbd>a</kbd> (or run `:adblock-update`) to redownload every list and rebuild the engine.
+- The installer pre-builds `~/.local/share/qutebrowser/adblock-cache.dat`, so blocking is active on first launch.
+- Edit `~/.config/qutebrowser/brave-lists.txt` to add or comment out lists, then run `:adblock-update`.
+
+**Honest limitations** — qutebrowser does not expose every Brave hook:
+
+- `$redirect` resources and uBO scriptlets are parsed by the engine but not injected, because qutebrowser constructs the engine without Brave's resource component.
+- `$csp` directives are not applied to responses.
+- `$removeparam` URL rewriting is not performed.
+- Cosmetic filtering covers CSS selectors; procedural filters (`:has-text`, `:xpath`) are ignored.
+
+For those, the bundled YouTube ad-skip userscript covers the most visible gap. Everything else is the same engine + same lists Brave uses.
+
+---
+
 ## ⌨️ Keybindings Reference
 
 | Key | Action | Description |
@@ -114,6 +154,7 @@ omarchy theme set "$(omarchy theme current)"
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
 | <kbd>t</kbd><kbd>r</kbd> | `:config-source ;; :greasemonkey-reload` | Reload config, active Omarchy theme, and Greasemonkey scripts |
+| <kbd>t</kbd><kbd>a</kbd> | `:adblock-update` | Redownload Brave filter lists and rebuild the adblock engine |
 | <kbd>Esc</kbd> | `cancel` | Clear search selection and return to normal mode |
 
 ---

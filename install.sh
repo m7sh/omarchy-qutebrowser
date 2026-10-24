@@ -32,21 +32,34 @@ OMARCHY_THEMED="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/themed"
 OMARCHY_HOOKS="${XDG_CONFIG_HOME:-$HOME/.config}/omarchy/hooks/theme-set.d"
 HYPR_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua"
 
-# 1. Ensure Qutebrowser is installed
-if ! command -v qutebrowser >/dev/null 2>&1; then
-    echo -e "${YELLOW}➜ qutebrowser is not installed.${RESET}"
-    if command -v omarchy >/dev/null 2>&1; then
-        echo -e "${BLUE}Installing qutebrowser via Omarchy...${RESET}"
-        omarchy pkg add qutebrowser
-    elif command -v pacman >/dev/null 2>&1; then
-        echo -e "${BLUE}Installing qutebrowser via pacman...${RESET}"
-        sudo pacman -S --noconfirm qutebrowser
-    else
-        echo -e "${YELLOW}Please install qutebrowser first and re-run this script.${RESET}"
+# 1. Ensure Qutebrowser and Brave's adblock engine are installed
+if ! command -v qutebrowser >/dev/null 2>&1 || ! python3 -c 'import adblock' >/dev/null 2>&1; then
+    echo -e "${YELLOW}➜ qutebrowser and/or python-adblock are not installed.${RESET}"
+    INSTALLED=0
+    if command -v omarchy >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+        echo -e "${BLUE}Installing qutebrowser + Brave adblock engine via Omarchy...${RESET}"
+        if omarchy pkg add qutebrowser python-adblock 2>/dev/null; then
+            INSTALLED=1
+        fi
+    elif command -v pacman >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
+        echo -e "${BLUE}Installing qutebrowser + python-adblock via pacman...${RESET}"
+        if sudo pacman -S --noconfirm --needed qutebrowser python-adblock 2>/dev/null; then
+            INSTALLED=1
+        fi
+    fi
+
+    if [[ $INSTALLED -eq 0 ]] && command -v uv >/dev/null 2>&1; then
+        echo -e "${BLUE}Installing qutebrowser + python-adblock via uv (user environment)...${RESET}"
+        uv tool install --with adblock --with PyQt6 --with PyQt6-WebEngine qutebrowser >/dev/null 2>&1 || true
+        uv pip install --target "$HOME/.local/lib/python$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages" adblock >/dev/null 2>&1 || true
+    fi
+
+    if ! command -v qutebrowser >/dev/null 2>&1 || ! python3 -c 'import adblock' >/dev/null 2>&1; then
+        echo -e "${YELLOW}Please install qutebrowser and python-adblock first and re-run this script.${RESET}"
         exit 1
     fi
 fi
-echo -e "${GREEN}✓ qutebrowser is installed.${RESET}"
+echo -e "${GREEN}✓ qutebrowser + Brave adblock engine are installed.${RESET}"
 
 # 2. Setup ~/.config/qutebrowser and install config.py
 mkdir -p "$QUTE_DIR"
@@ -59,6 +72,13 @@ fi
 echo -e "${BLUE}➜ Installing qutebrowser config.py...${RESET}"
 cp "$SCRIPT_DIR/config.py" "$QUTE_DIR/config.py"
 chmod 644 "$QUTE_DIR/config.py"
+
+# Brave adblock: settings, catalog and cosmetic-filtering layer
+echo -e "${BLUE}➜ Installing Brave adblock integration...${RESET}"
+cp "$SCRIPT_DIR/brave_adblock.py" "$QUTE_DIR/brave_adblock.py"
+cp "$SCRIPT_DIR/brave_cosmetics.py" "$QUTE_DIR/brave_cosmetics.py"
+cp "$SCRIPT_DIR/brave-lists.txt" "$QUTE_DIR/brave-lists.txt"
+chmod 644 "$QUTE_DIR/brave_adblock.py" "$QUTE_DIR/brave_cosmetics.py" "$QUTE_DIR/brave-lists.txt"
 echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
 # 3. Install Greasemonkey userscripts (YouTube ad skipping, etc.)
@@ -68,6 +88,19 @@ if [[ -d "$SCRIPT_DIR/greasemonkey" ]]; then
     cp -r "$SCRIPT_DIR/greasemonkey/"* "$QUTE_DIR/greasemonkey/"
     chmod 644 "$QUTE_DIR/greasemonkey"/*
     echo -e "${GREEN}✓ Greasemonkey scripts installed to $QUTE_DIR/greasemonkey/${RESET}"
+fi
+
+# 3b. Pre-build the adblock engine cache so blocking works on first launch
+if python3 -c 'import adblock' >/dev/null 2>&1; then
+    echo -e "${BLUE}➜ Building Brave adblock cache (downloads ~9 MB of filter lists)...${RESET}"
+    if python3 "$SCRIPT_DIR/contrib/brave_adblock/build_cache.py" \
+            --lists "$QUTE_DIR/brave-lists.txt" --refresh; then
+        echo -e "${GREEN}✓ Brave adblock cache ready.${RESET}"
+    else
+        echo -e "${YELLOW}Note: cache build failed; run :adblock-update in qutebrowser.${RESET}"
+    fi
+else
+    echo -e "${YELLOW}Note: python-adblock is missing; network ad blocking will be unavailable.${RESET}"
 fi
 
 # 4. Install Omarchy theme templates
@@ -121,4 +154,5 @@ fi
 
 echo -e "\n${GREEN}${BOLD}🎉 Installation Complete!${RESET}"
 echo -e "Launch with: ${CYAN}qutebrowser${RESET}"
+echo -e "Update adblock lists: ${CYAN}ta${RESET} (or ${CYAN}:adblock-update${RESET})"
 echo -e "Vim shortcuts: ${YELLOW}o/O${RESET} (open), ${YELLOW}f/F${RESET} (hints), ${YELLOW}d/u${RESET} (close/undo tab), ${YELLOW}M${RESET} (stream in MPV), ${YELLOW}td${RESET} (toggle darkmode)\n"

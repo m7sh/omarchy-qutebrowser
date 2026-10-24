@@ -91,8 +91,10 @@ c.colors.webpage.darkmode.policy.images = "never"
 c.colors.webpage.darkmode.enabled = True
 
 # Content & Downloads
-c.content.blocking.enabled = True
-c.content.blocking.method = "auto"
+# Brave-style blocking: Brave's adblock-rust engine (same engine qutebrowser
+# uses) + Brave's filter catalog + a hosts layer + cosmetic filtering.
+config.source("brave_adblock.py")
+config.source("brave_cosmetics.py")
 c.content.notifications.enabled = True
 c.downloads.location.prompt = False
 c.downloads.position = "bottom"
