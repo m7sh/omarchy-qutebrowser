@@ -82,12 +82,19 @@ c.content.local_content_can_access_file_urls = True
 config.set("content.local_content_can_access_remote_urls", True, "file://*")
 
 # ------------------------------------------------------------------------------
-# Smooth Scrolling & Dark Mode Engine
+# Smooth Scrolling & Dark Mode
 # ------------------------------------------------------------------------------
 c.scrolling.smooth = True
+# Prefer each site's own dark theme. Chromium's forced inversion is a per-element
+# colour flip, so toggle switches, checkboxes and nested controls can end up
+# partially inverted (e.g. a white knob turning black on a still-light track).
+# Native `prefers-color-scheme: dark` avoids that and is what most sites ship.
+# The generated theme.py sets the scheme to the active Omarchy mode; `td` keeps
+# the forced-inversion fallback for light-only pages.
+c.colors.webpage.preferred_color_scheme = "dark"
 c.colors.webpage.darkmode.algorithm = "lightness-cielab"
 c.colors.webpage.darkmode.policy.images = "never"
-c.colors.webpage.darkmode.enabled = True
+c.colors.webpage.darkmode.enabled = False
 
 # Content & Downloads
 # Brave-style blocking: Brave's adblock-rust engine (same engine qutebrowser
@@ -101,7 +108,7 @@ c.downloads.position = "bottom"
 # ------------------------------------------------------------------------------
 # Keybindings (Vim-style & Omarchy desktop power keys)
 # ------------------------------------------------------------------------------
-# Dark mode toggle
+# Forced dark-mode fallback for light-only sites (native dark themes are used by default)
 config.bind("td", "config-cycle colors.webpage.darkmode.enabled")
 
 # Tabs and statusbar toggles

@@ -23,7 +23,7 @@
 - ⌨️ **Vim Keyboard Controls**: Seamless single-key navigation, quick hints, history management, and tab cycling.
 - 🛡️ **Brave-Grade Ad & YouTube Blocking**: Uses **Brave's own `adblock-rust` engine** (via `python-adblock`) with Brave's default filter-list catalog, a hosts-file layer, DOM cosmetic element hiding, and dedicated YouTube video ad skipping & banner suppression.
 - 🎬 **1-Key MPV Video Player**: Press <kbd>M</kbd> on any YouTube or video link (or <kbd>,</kbd><kbd>m</kbd> on any page) to stream directly in hardware-accelerated `mpv`.
-- 🌙 **Non-Inverting Dark Mode**: Uses CIELAB lightness curve with smart image protection (`policy.images = "never"`). Toggle on/off anytime with <kbd>t</kbd><kbd>d</kbd>.
+- 🌙 **Native Dark Theme First**: Sites that ship a dark theme receive `prefers-color-scheme: dark`, so toggle switches, checkboxes and other form controls keep their intended styling. CIELAB forced inversion is still available as a fallback for light-only sites with <kbd>t</kbd><kbd>d</kbd>.
 
 ---
 
@@ -136,7 +136,7 @@ Because YouTube streams video ads dynamically over media chunk connections (`goo
 | <kbd>M</kbd> | `:hint links spawn mpv` | Stream selected link hint directly in MPV |
 | <kbd>,</kbd><kbd>m</kbd> | `:spawn mpv {url}` | Stream current webpage video in MPV |
 | <kbd>;</kbd><kbd>m</kbd> | `:hint --rapid links` | Rapid multi-video streaming in MPV |
-| <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle smart dark mode |
+| <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle forced dark-mode fallback (sites use their native dark theme by default) |
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
 | <kbd>t</kbd><kbd>r</kbd> | `:config-source` | Reload config and the active Omarchy theme |

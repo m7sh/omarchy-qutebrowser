@@ -43,8 +43,11 @@ c.window.transparent = True
 
 # Webpage background (theme background; compositor handles window opacity/blur)
 c.colors.webpage.bg = BG
+# Ask sites for their own dark/light theme instead of forcing a colour inversion.
+# Chromium's inversion is per-element and leaves controls (switches, checkboxes)
+# inconsistently flipped; `td` still toggles it as a fallback for light-only sites.
 c.colors.webpage.preferred_color_scheme = MODE
-c.colors.webpage.darkmode.enabled = (MODE == "dark")
+c.colors.webpage.darkmode.enabled = False
 
 # ------------------------------------------------------------------------------
 # Tab Bar Colors (Translucent & Minimal)
