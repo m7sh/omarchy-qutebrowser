@@ -45,7 +45,7 @@ cd omarchy-qutebrowser
 
 ### What the installer does:
 1. Installs `qutebrowser` + `python-adblock` (Brave's engine) from the Arch/Omarchy repositories via `pacman`.
-2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py`, `brave-lists.txt` and `greasemonkey/` to `~/.config/qutebrowser/` (backs up existing `config.py`).
+2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py` and `brave-lists.txt` to `~/.config/qutebrowser/` (backs up existing `config.py`).
 3. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
 4. Installs dynamic templates to `~/.config/omarchy/themed/`.
 5. Installs the automated `theme-set.d` hook to `~/.config/omarchy/hooks/theme-set.d/`.
@@ -58,11 +58,9 @@ cd omarchy-qutebrowser
 
 If you prefer to configure manually:
 
-### 1. Copy Qutebrowser Config, Brave Adblock Files & Userscripts
+### 1. Copy Qutebrowser Config & Brave Adblock Files
 ```bash
-mkdir -p ~/.config/qutebrowser/greasemonkey
 cp config.py brave_adblock.py brave_cosmetics.py brave-lists.txt ~/.config/qutebrowser/
-cp greasemonkey/* ~/.config/qutebrowser/greasemonkey/
 ```
 
 Build the adblock cache (requires `python-adblock`):
@@ -120,7 +118,6 @@ For everything else, all network blocking, element hiding, and tracking preventi
 
 ### 🎬 Dedicated YouTube Ad & Banner Elimination
 Because YouTube streams video ads dynamically over media chunk connections (`googlevideo.com`) and updates its player DOM frequently:
-- **Player Response Interception**: Strips `adPlacements` and `adSlots` from `ytInitialPlayerResponse` before the player can initialize ad queues.
 - **Fast-Forward & Auto-Skip Engine**: Intercepts in-stream ad overlays, mutes audio, accelerates playback to 16×, and seeks to completion.
 - **Cosmetic Banner Hiding**: Injects custom CSS rules hiding sidebar banners (`ytd-ad-slot-renderer`), top mastheads, and sponsored tiles.
 
@@ -142,7 +139,7 @@ Because YouTube streams video ads dynamically over media chunk connections (`goo
 | <kbd>t</kbd><kbd>d</kbd> | `darkmode toggle` | Toggle smart dark mode |
 | <kbd>t</kbd><kbd>t</kbd> | `tabs toggle` | Toggle tab bar visibility |
 | <kbd>t</kbd><kbd>s</kbd> | `statusbar toggle`| Toggle status bar visibility |
-| <kbd>t</kbd><kbd>r</kbd> | `:config-source ;; :greasemonkey-reload` | Reload config, active Omarchy theme & userscripts |
+| <kbd>t</kbd><kbd>r</kbd> | `:config-source` | Reload config and the active Omarchy theme |
 | <kbd>t</kbd><kbd>a</kbd> | `:adblock-update` | Redownload Brave filter lists and rebuild the adblock engine |
 | <kbd>Esc</kbd> | `cancel` | Clear search selection and return to normal mode |
 

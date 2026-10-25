@@ -108,8 +108,8 @@ config.bind("td", "config-cycle colors.webpage.darkmode.enabled")
 config.bind("tt", "config-cycle tabs.show always switching")
 config.bind("ts", "config-cycle statusbar.show always in-mode")
 
-# Reload config, active Omarchy theme & userscripts
-config.bind("tr", "config-source ;; greasemonkey-reload")
+# Reload config and the active Omarchy theme
+config.bind("tr", "config-source")
 
 # Stream video in MPV (Direct Wayland player integration)
 config.bind("M", "hint links spawn mpv {hint-url}")

@@ -70,17 +70,7 @@ cp "$SCRIPT_DIR/brave-lists.txt" "$QUTE_DIR/brave-lists.txt"
 chmod 644 "$QUTE_DIR/brave_adblock.py" "$QUTE_DIR/brave_cosmetics.py" "$QUTE_DIR/brave-lists.txt"
 echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
-# 3. Install YouTube AdBlock userscript (document-start player response interceptor)
-mkdir -p "$QUTE_DIR/greasemonkey"
-rm -f "$QUTE_DIR/greasemonkey/yt-ads.js"
-if [[ -d "$SCRIPT_DIR/greasemonkey" ]]; then
-    echo -e "${BLUE}➜ Installing YouTube AdBlock userscript...${RESET}"
-    cp -r "$SCRIPT_DIR/greasemonkey/"* "$QUTE_DIR/greasemonkey/"
-    chmod 644 "$QUTE_DIR/greasemonkey"/*
-    echo -e "${GREEN}✓ Userscript installed to $QUTE_DIR/greasemonkey/${RESET}"
-fi
-
-# 3b. Pre-build the adblock engine cache so blocking works on first launch
+# 3. Pre-build the adblock engine cache so blocking works on first launch
 if python3 -c 'import adblock' >/dev/null 2>&1; then
     echo -e "${BLUE}➜ Building Brave adblock cache (downloads ~9 MB of filter lists)...${RESET}"
     if python3 "$SCRIPT_DIR/contrib/brave_adblock/build_cache.py" \
