@@ -6,6 +6,8 @@
 # ==============================================================================
 set -euo pipefail
 
+VERSION="1.2.0"
+
 BOLD="\033[1m"
 GREEN="\033[38;2;166;227;161m"
 BLUE="\033[38;2;137;180;250m"
@@ -23,7 +25,8 @@ cat << 'EOF'
  \___/|_| |_| |_|\__,_|_|  \___|_| |_|\__, | \__\_\\__,_|\__\___|_.__/|_|  \___/ \_/\_/ |___/\___|_|   
                                        |___/                                                              
 EOF
-echo -e "${RESET}${CYAN}Dynamic Theming & Brave-Grade Ad Blocking for Omarchy Linux${RESET}\n"
+echo -e "${RESET}${CYAN}Dynamic Theming & Brave-Grade Ad Blocking for Omarchy Linux${RESET}"
+echo -e "${CYAN}v${VERSION}${RESET}\n"
 
 # Directory paths
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -72,7 +75,7 @@ echo -e "${GREEN}✓ Config installed to $QUTE_DIR/config.py${RESET}"
 
 # 3. Pre-build the adblock engine cache so blocking works on first launch
 if python3 -c 'import adblock' >/dev/null 2>&1; then
-    echo -e "${BLUE}➜ Building Brave adblock cache (downloads ~9 MB of filter lists)...${RESET}"
+    echo -e "${BLUE}➜ Building Brave adblock cache (downloads the filter lists; cache ≈ 14 MB)...${RESET}"
     if python3 "$SCRIPT_DIR/contrib/brave_adblock/build_cache.py" \
             --lists "$QUTE_DIR/brave-lists.txt" --refresh; then
         echo -e "${GREEN}✓ Brave adblock cache ready.${RESET}"
@@ -149,6 +152,7 @@ fi
 echo -e "${GREEN}✓ Desktop launcher entry installed.${RESET}"
 
 echo -e "\n${GREEN}${BOLD}🎉 Installation Complete!${RESET}"
+echo -e "${CYAN}Omarchy Qutebrowser v${VERSION}${RESET}"
 echo -e "Launch with: ${CYAN}qutebrowser${RESET}"
 echo -e "Update adblock lists: ${CYAN}ta${RESET} (or ${CYAN}:adblock-update${RESET})"
-echo -e "Vim shortcuts: ${YELLOW}o/O${RESET} (open), ${YELLOW}f/F${RESET} (hints), ${YELLOW}d/u${RESET} (close/undo tab), ${YELLOW}M${RESET} (stream in MPV), ${YELLOW}td${RESET} (toggle darkmode)\n"
+echo -e "Vim shortcuts: ${YELLOW}o/O${RESET} (open), ${YELLOW}f/F${RESET} (hints), ${YELLOW}d/u${RESET} (close/undo tab), ${YELLOW}M${RESET} (stream in MPV), ${YELLOW}td${RESET} (forced-dark fallback)\n"
