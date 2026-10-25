@@ -125,7 +125,7 @@ fi
 APPS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/applications"
 ICONS_DIR="${XDG_DATA_HOME:-$HOME/.local/share}/icons/hicolor/scalable/apps"
 mkdir -p "$APPS_DIR" "$ICONS_DIR"
-ICON_SOURCE="$(find /home/mush/.local/share/uv/tools/qutebrowser /usr/share/icons -name "qutebrowser.svg" 2>/dev/null | head -n 1 || true)"
+ICON_SOURCE="$(find /usr/share/icons "$HOME/.local/share/icons" "$HOME/.local/share/uv/tools/qutebrowser" -name "qutebrowser.svg" 2>/dev/null | head -n 1 || true)"
 if [[ -n "$ICON_SOURCE" && -f "$ICON_SOURCE" ]]; then
     cp "$ICON_SOURCE" "$ICONS_DIR/qutebrowser.svg"
 fi
