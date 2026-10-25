@@ -35,23 +35,12 @@ HYPR_CONF="${XDG_CONFIG_HOME:-$HOME/.config}/hypr/hyprland.lua"
 # 1. Ensure Qutebrowser and Brave's adblock engine are installed
 if ! command -v qutebrowser >/dev/null 2>&1 || ! python3 -c 'import adblock' >/dev/null 2>&1; then
     echo -e "${YELLOW}➜ qutebrowser and/or python-adblock are not installed.${RESET}"
-    INSTALLED=0
-    if command -v omarchy >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-        echo -e "${BLUE}Installing qutebrowser + Brave adblock engine via Omarchy...${RESET}"
-        if omarchy pkg add qutebrowser python-adblock 2>/dev/null; then
-            INSTALLED=1
-        fi
-    elif command -v pacman >/dev/null 2>&1 && sudo -n true 2>/dev/null; then
-        echo -e "${BLUE}Installing qutebrowser + python-adblock via pacman...${RESET}"
-        if sudo pacman -S --noconfirm --needed qutebrowser python-adblock 2>/dev/null; then
-            INSTALLED=1
-        fi
-    fi
-
-    if [[ $INSTALLED -eq 0 ]] && command -v uv >/dev/null 2>&1; then
-        echo -e "${BLUE}Installing qutebrowser + python-adblock via uv (user environment)...${RESET}"
-        uv tool install --with adblock --with PyQt6 --with PyQt6-WebEngine qutebrowser >/dev/null 2>&1 || true
-        uv pip install --target "$HOME/.local/lib/python$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')/site-packages" adblock >/dev/null 2>&1 || true
+    if command -v pacman >/dev/null 2>&1; then
+        echo -e "${BLUE}Installing qutebrowser + Brave adblock engine via pacman...${RESET}"
+        echo -e "${CYAN}You may be asked for your sudo password.${RESET}"
+        sudo pacman -S --noconfirm --needed qutebrowser python-adblock
+    else
+        echo -e "${YELLOW}This installer targets Arch/Omarchy. Please install qutebrowser and python-adblock manually.${RESET}"
     fi
 
     if ! command -v qutebrowser >/dev/null 2>&1 || ! python3 -c 'import adblock' >/dev/null 2>&1; then

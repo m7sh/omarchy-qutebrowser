@@ -44,7 +44,7 @@ cd omarchy-qutebrowser
 ```
 
 ### What the installer does:
-1. Installs `qutebrowser` + `python-adblock` (Brave's engine) via `omarchy pkg add` or `pacman` (with `uv` user fallback).
+1. Installs `qutebrowser` + `python-adblock` (Brave's engine) from the Arch/Omarchy repositories via `pacman`.
 2. Deploys `config.py`, `brave_adblock.py`, `brave_cosmetics.py`, `brave-lists.txt` and `greasemonkey/` to `~/.config/qutebrowser/` (backs up existing `config.py`).
 3. Pre-builds the adblock engine cache from the Brave list catalog, so blocking works on first launch.
 4. Installs dynamic templates to `~/.config/omarchy/themed/`.
@@ -100,7 +100,7 @@ The catalog in [`brave-lists.txt`](./brave-lists.txt) mirrors the default-enable
 | Cookie Notices | Fanboy Cookie + uBO Cookie + Brave cookie rules |
 | Hosts layer | StevenBlack hosts (second net for trackers missing from ABP lists) |
 
-On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**: it asks the same adblock-rust engine for the page's `hide_selectors`, `style_selectors` and generic `.class`/`#id` rules, then injects them as a `<style>` element. That is the element-hiding step qutebrowser's [FAQ](https://github.com/qutebrowser/qutebrowser/issues/5754) says is not implemented. `$generichide` exceptions are honoured.
+On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**: it asks the same adblock-rust engine for the page's `hide_selectors`, `style_selectors` and generic `.class`/`#id` rules, then injects them as a `<style>` element. That is the element-hiding step qutebrowser's [FAQ](https://github.com/qutebrowser/qutebrowser/issues/5754) says is not implemented. Site-specific `$generichide` exceptions are honoured; a sentinel probe works around an adblock-rust 0.5.6 bug that otherwise reports `generichide` for every page.
 
 **Updating lists**
 
@@ -114,6 +114,7 @@ On top of network blocking, `brave_cosmetics.py` restores **cosmetic filtering**
 - `$csp` directives are not applied to responses.
 - `$removeparam` URL rewriting is not performed.
 - Cosmetic filtering covers CSS selectors; procedural filters (`:has-text`, `:xpath`) are ignored.
+- Due to the adblock-rust `generichide` bug, generic complex selectors (anything that is not a plain `.class`/`#id` rule) can still be skipped on some pages; class/id element hiding is unaffected.
 
 For everything else, all network blocking, element hiding, and tracking prevention use the exact same engine and lists Brave ships.
 
